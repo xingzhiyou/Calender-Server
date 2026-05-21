@@ -9,4 +9,3 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-    user: "${UID:-1000}:${GID:-1000}"
