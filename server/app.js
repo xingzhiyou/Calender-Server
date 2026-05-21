@@ -9,13 +9,17 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const PORT = process.env.PORT || 8080;
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '..', 'uploads');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 const JSON_FILE = path.join(UPLOAD_DIR, 'resources.json');
-const USERS_FILE = path.join(UPLOAD_DIR, 'users.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SECRET_KEY = 'calendar-server-secret-key-2024';
 
-// 确保上传目录存在
+// 确保数据目录存在
 if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 // 确保 JSON 文件存在

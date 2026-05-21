@@ -3,7 +3,9 @@ node_modules/
 
 # 上传文件（保留目录结构）
 uploads/*
-!uploads/.gitkeep
+
+# 数据目录
+data/
 
 # 日志
 *.log
