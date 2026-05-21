@@ -1,0 +1,11 @@
+services:
+  calendar-server:
+    build: .
+    container_name: calendar-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production

@@ -25,3 +25,8 @@ npm-debug.log*
 # 临时文件
 *.tmp
 *.temp
+
+# 压缩包
+*.tar
+*.tar.gz
+*.zip
