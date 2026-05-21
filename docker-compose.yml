@@ -3,7 +3,7 @@ services:
     build: .
     container_name: calendar-server
     ports:
-      - "8080:8080"
+      - "5040:8080"
     volumes:
       - ./uploads:/app/uploads
     restart: unless-stopped
