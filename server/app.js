@@ -7,8 +7,8 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
-const PORT = 8080;
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+const PORT = process.env.PORT || 8080;
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '..', 'uploads');
 const JSON_FILE = path.join(UPLOAD_DIR, 'resources.json');
 const USERS_FILE = path.join(UPLOAD_DIR, 'users.json');
 const SECRET_KEY = 'calendar-server-secret-key-2024';

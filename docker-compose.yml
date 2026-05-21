@@ -9,3 +9,4 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - UPLOAD_DIR=/app/uploads
