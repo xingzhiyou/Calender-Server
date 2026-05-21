@@ -18,6 +18,14 @@ if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
+// 确保 JSON 文件存在
+if (!fs.existsSync(JSON_FILE)) {
+    fs.writeFileSync(JSON_FILE, JSON.stringify({ resources: [] }, null, 2));
+}
+if (!fs.existsSync(USERS_FILE)) {
+    fs.writeFileSync(USERS_FILE, JSON.stringify({ users: [], tokens: {} }, null, 2));
+}
+
 // 用户管理
 function loadUsers() {
     try {
@@ -27,7 +35,7 @@ function loadUsers() {
     } catch (err) {
         console.error('加载用户失败:', err);
     }
-    return { users: [] };
+    return { users: [], tokens: {} };
 }
 
 function saveUsers(data) {
