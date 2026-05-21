@@ -789,9 +789,34 @@
                 
                 const copyPath = (resource) => {
                     const path = `${window.location.origin}${resource.path}`;
-                    navigator.clipboard.writeText(path).then(() => {
+                    
+                    // 尝试使用现代 Clipboard API
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(path).then(() => {
+                            showMessage('路径已复制到剪贴板！', 'success');
+                        }).catch(() => {
+                            // 降级：使用传统方法
+                            fallbackCopy(path);
+                        });
+                    } else {
+                        fallbackCopy(path);
+                    }
+                };
+                
+                const fallbackCopy = (text) => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
                         showMessage('路径已复制到剪贴板！', 'success');
-                    });
+                    } catch (err) {
+                        showMessage('复制失败，请手动复制：' + text, 'error');
+                    }
+                    document.body.removeChild(textarea);
                 };
                 
                 const getFileName = (path) => {
