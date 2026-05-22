@@ -67,6 +67,10 @@
         .name-select:focus { outline: none; border-color: #4CAF50; }
         .custom-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-top: 10px; }
         .hint { font-size: 12px; color: #999; margin-top: 5px; }
+        .preview-overlay { background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; }
+        .preview-image { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 4px; }
+        .preview-close { position: absolute; top: 20px; right: 30px; font-size: 40px; color: white; background: none; border: none; cursor: pointer; line-height: 1; }
+        .preview-close:hover { color: #ccc; }
     </style>
 </head>
 <body>
@@ -296,7 +300,7 @@
                         <tbody>
                             <tr v-for="resource in filteredResources" :key="resource.uuid">
                                 <td>
-                                    <img v-if="isImage(resource.content_type)" :src="getFileUrl(resource)" class="file-preview" @error="e => e.target.style.display='none'">
+                                    <img v-if="isImage(resource.content_type)" :src="getFileUrl(resource)" class="file-preview" @click="previewImage(resource)" style="cursor: pointer;" @error="e => e.target.style.display='none'">
                                     <span v-else>📄</span>
                                 </td>
                                 <td>{{ resource.name }}</td>
@@ -345,6 +349,12 @@
                 </div>
             </div>
         </div>
+        
+        <!-- 图片预览弹窗 -->
+        <div v-if="showPreviewModal" class="modal-overlay preview-overlay" @click.self="showPreviewModal = false">
+            <button class="preview-close" @click="showPreviewModal = false">×</button>
+            <img :src="previewUrl" class="preview-image" @click.stop>
+        </div>
     </div>
     
     <script>
@@ -382,6 +392,10 @@
                 const showDeleteModal = ref(false);
                 const editForm = ref({ uuid: '', name: '' });
                 const deleteTarget = ref(null);
+                
+                // 图片预览
+                const showPreviewModal = ref(false);
+                const previewUrl = ref('');
                 
                 // 用户管理
                 const showUserManagement = ref(false);
@@ -790,6 +804,11 @@
                     showDeleteModal.value = true;
                 };
                 
+                const previewImage = (resource) => {
+                    previewUrl.value = `/api/files?name=${encodeURIComponent(resource.name)}`;
+                    showPreviewModal.value = true;
+                };
+                
                 const doDelete = async () => {
                     try {
                         const res = await authAxios.delete(`${apiBase}/resources/${deleteTarget.value.uuid}`);
@@ -919,6 +938,10 @@
                     showDeleteModal,
                     editForm,
                     deleteTarget,
+                    // 图片预览
+                    showPreviewModal,
+                    previewUrl,
+                    previewImage,
                     filteredResources,
                     onNameOptionChange,
                     handleFileSelect,
