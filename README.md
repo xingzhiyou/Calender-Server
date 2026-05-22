@@ -11,6 +11,7 @@
 - ✅ UUID唯一标识
 - ✅ 后台管理界面
 - ✅ 文件预览（图片）
+- ✅ 图片压缩获取（?quality= 参数）
 - ✅ CORS跨域支持
 - ✅ 用户认证系统
 - ✅ 白名单注册机制
@@ -22,6 +23,7 @@
 - **后端**: Node.js + Express
 - **前端**: Vue 3 (内嵌于管理页面)
 - **存储**: 本地文件系统 + JSON元数据
+- **图片处理**: sharp 图片压缩库
 - **认证**: Token + SHA256密码哈希
 
 ## 项目结构
@@ -30,13 +32,14 @@
 Calendar-Server/
 ├── server/              # Node.js后端
 │   ├── app.js          # 主程序
-│   ├── package.json    # 依赖配置
+│   ├── package.json     # 依赖配置
 │   ├── reset-password.js # 密码重置脚本
 │   └── public/
-│       └── admin.html  # 管理页面
+│       └── admin.html   # 管理页面
 ├── uploads/            # 文件存储目录
-│   ├── resources.json  # 资源元数据
-│   └── users.json      # 用户数据
+│   └── resources.json   # 资源元数据
+├── data/               # 用户数据目录
+│   └── users.json       # 用户数据
 └── README.md
 ```
 
@@ -224,7 +227,9 @@ Authorization: Bearer <token>
 
 ### 下载文件
 ```bash
-GET /api/files/{filename}
+GET /api/files?name=文件名
+GET /api/files?filename=uuid.ext
+GET /api/files?name=文件名&quality=60   # 图片压缩（10-100）
 Authorization: Bearer <token>
 ```
 

@@ -296,7 +296,7 @@
                         <tbody>
                             <tr v-for="resource in filteredResources" :key="resource.uuid">
                                 <td>
-                                    <img v-if="isImage(resource.content_type)" :src="'/api/files/' + getFileName(resource.path)" class="file-preview" @error="e => e.target.style.display='none'">
+                                    <img v-if="isImage(resource.content_type)" :src="getFileUrl(resource)" class="file-preview" @error="e => e.target.style.display='none'">
                                     <span v-else>📄</span>
                                 </td>
                                 <td>{{ resource.name }}</td>
@@ -806,7 +806,7 @@
                 };
                 
                 const copyPath = (resource) => {
-                    const path = `${window.location.origin}${resource.path}`;
+                    const path = `${window.location.origin}/api/files?name=${encodeURIComponent(resource.name)}`;
                     
                     // 尝试使用现代 Clipboard API
                     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -838,7 +838,12 @@
                 };
                 
                 const getFileName = (path) => {
-                    return path.replace('/api/files/', '');
+                    const filename = path.replace('/api/files/', '');
+                    return filename;
+                };
+                
+                const getFileUrl = (resource) => {
+                    return `/api/files?name=${encodeURIComponent(resource.name)}`;
                 };
                 
                 const isImage = (contentType) => {
@@ -925,6 +930,7 @@
                     doDelete,
                     copyPath,
                     getFileName,
+                    getFileUrl,
                     isImage,
                     formatSize,
                     formatDate,

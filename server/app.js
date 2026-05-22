@@ -593,9 +593,9 @@ app.delete('/api/resources/:uuid', authMiddleware, (req, res) => {
     }
 });
 
-// GET /api/files - 下载文件（?name= 或 ?filename=）
+// GET /api/files - 下载文件（?name= 或 ?filename=，可选 ?quality=10-100 压缩图片）
 app.get('/api/files', (req, res) => {
-    const { name, filename } = req.query;
+    const { name, filename, quality } = req.query;
     const resources = loadResources();
     
     if (filename) {
@@ -618,9 +618,36 @@ app.get('/api/files', (req, res) => {
         const filepath = path.join(UPLOAD_DIR, path.basename(resource.path));
         
         if (fs.existsSync(filepath)) {
-            res.setHeader('Content-Type', resource.content_type || 'application/octet-stream');
-            res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(resource.name)}"`);
-            res.sendFile(filepath);
+            const isImage = resource.content_type && resource.content_type.startsWith('image/');
+            const qualityValue = parseInt(quality) || 100;
+            
+            // 如果是图片且 quality < 100，则压缩
+            if (isImage && qualityValue < 100) {
+                try {
+                    const sharp = require('sharp');
+                    const buffer = fs.readFileSync(filepath);
+                    sharp(buffer)
+                        .jpeg({ quality: qualityValue })
+                        .toBuffer((err, data, info) => {
+                            if (err) {
+                                res.status(500).json({ success: false, error: '压缩失败' });
+                            } else {
+                                res.setHeader('Content-Type', info.format === 'jpeg' ? 'image/jpeg' : resource.content_type);
+                                res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(resource.name)}"`);
+                                res.send(data);
+                            }
+                        });
+                } catch (e) {
+                    // sharp 未安装，返回原文件
+                    res.setHeader('Content-Type', resource.content_type || 'application/octet-stream');
+                    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(resource.name)}"`);
+                    res.sendFile(filepath);
+                }
+            } else {
+                res.setHeader('Content-Type', resource.content_type || 'application/octet-stream');
+                res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(resource.name)}"`);
+                res.sendFile(filepath);
+            }
         } else {
             res.status(404).json({ success: false, error: 'File not found' });
         }
