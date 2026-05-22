@@ -593,18 +593,39 @@ app.delete('/api/resources/:uuid', authMiddleware, (req, res) => {
     }
 });
 
-// GET /api/files/:filename - 下载文件
-app.get('/api/files/:filename', (req, res) => {
-    const { filename } = req.params;
-    const filepath = path.join(UPLOAD_DIR, filename);
+// GET /api/files - 下载文件（?name= 或 ?filename=）
+app.get('/api/files', (req, res) => {
+    const { name, filename } = req.query;
+    const resources = loadResources();
     
-    if (fs.existsSync(filepath)) {
-        res.download(filepath, filename);
+    if (filename) {
+        // 通过文件名下载
+        const filepath = path.join(UPLOAD_DIR, filename);
+        if (fs.existsSync(filepath)) {
+            res.download(filepath, filename);
+        } else {
+            res.status(404).json({ success: false, error: 'File not found' });
+        }
+    } else if (name) {
+        // 通过资源名称下载
+        const decodedName = decodeURIComponent(name);
+        const resource = resources.find(r => r.name === decodedName);
+        
+        if (!resource) {
+            return res.status(404).json({ success: false, error: 'Resource not found' });
+        }
+        
+        const filepath = path.join(UPLOAD_DIR, path.basename(resource.path));
+        
+        if (fs.existsSync(filepath)) {
+            res.setHeader('Content-Type', resource.content_type || 'application/octet-stream');
+            res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(resource.name)}"`);
+            res.sendFile(filepath);
+        } else {
+            res.status(404).json({ success: false, error: 'File not found' });
+        }
     } else {
-        res.status(404).json({
-            success: false,
-            error: 'File not found'
-        });
+        res.status(400).json({ success: false, error: 'Missing name or filename parameter' });
     }
 });
 
@@ -621,12 +642,14 @@ app.get('/', (req, res) => {
 // 启动服务器
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://0.0.0.0:${PORT}`);
-    console.log(`Data directory: ${UPLOAD_DIR}`);
+    console.log(`Data directory: ${DATA_DIR}`);
+    console.log(`Upload directory: ${UPLOAD_DIR}`);
     console.log('API endpoints:');
-    console.log('  GET    /api/resources        - List all resources');
+    console.log('  GET    /api/resources         - List all resources');
     console.log('  GET    /api/resources/:uuid  - Get resource by UUID');
-    console.log('  POST   /api/resources       - Upload new resource');
-    console.log('  PUT    /api/resources/:uuid - Update resource');
+    console.log('  POST   /api/resources        - Upload new resource');
+    console.log('  PUT    /api/resources/:uuid  - Update resource');
     console.log('  DELETE /api/resources/:uuid - Delete resource');
-    console.log('  GET    /api/files/:filename  - Download file');
+    console.log('  GET    /api/files?name=       - Download file by name');
+    console.log('  GET    /api/files?filename=   - Download file by filename');
 });

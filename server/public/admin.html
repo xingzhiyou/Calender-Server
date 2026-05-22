@@ -28,11 +28,25 @@
         .btn-secondary { background: #2196F3; color: white; }
         .btn-secondary:hover { background: #1976D2; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .table { width: 100%; border-collapse: collapse; }
-        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; white-space: nowrap; }
         .table th { background: #f5f5f5; font-weight: 600; color: #333; }
         .table tr:hover { background: #f9f9f9; }
-        .actions { display: flex; gap: 8px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        
+        /* 响应式卡片布局 */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .card { padding: 15px; }
+            h1 { font-size: 1.5rem; }
+            .table-wrapper { border-radius: 8px; }
+            .actions { flex-direction: column; }
+            .actions .btn { width: 100%; padding: 8px; font-size: 12px; }
+            .modal { width: 95%; max-width: none; padding: 15px; }
+            .form-row { flex-direction: column; gap: 10px; }
+            .form-row .form-group { flex: none; }
+        }
         .loading { text-align: center; padding: 40px; color: #666; }
         .error { background: #ffebee; color: #c62828; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
         .success { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
@@ -181,6 +195,7 @@
                     </div>
                     
                     <!-- 用户列表 -->
+                    <div class="table-wrapper">
                     <table class="table">
                         <thead>
                             <tr>
@@ -210,6 +225,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    </div>
                     
                     <div class="modal-actions">
                         <button class="btn btn-secondary" @click="showUserManagement = false">关闭</button>
@@ -259,45 +275,47 @@
             <div v-if="isLoggedIn" class="card">
                 <h2 style="margin-bottom: 15px;">资源列表</h2>
                 
-                <div class="search-box">
+                <div class="search-box" style="margin-bottom: 15px;">
                     <input type="text" v-model="searchQuery" placeholder="🔍 搜索资源名称...">
                 </div>
                 
                 <div v-if="loading" class="loading">加载中...</div>
-                <table v-else class="table">
-                    <thead>
-                        <tr>
-                            <th>预览</th>
-                            <th>名称</th>
-                            <th>UUID</th>
-                            <th>大小</th>
-                            <th>类型</th>
-                            <th>更新时间</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="resource in filteredResources" :key="resource.uuid">
-                            <td>
-                                <img v-if="isImage(resource.content_type)" :src="'/api/files/' + getFileName(resource.path)" class="file-preview" @error="e => e.target.style.display='none'">
-                                <span v-else>📄</span>
-                            </td>
-                            <td>{{ resource.name }}</td>
-                            <td style="font-family: monospace; font-size: 12px;">{{ resource.uuid }}</td>
-                            <td>{{ formatSize(resource.size) }}</td>
-                            <td>{{ resource.content_type }}</td>
-                            <td>{{ formatDate(resource.updated_at) }}</td>
-                            <td class="actions">
-                                <button class="btn btn-secondary" @click="copyPath(resource)">复制路径</button>
-                                <button class="btn btn-secondary" @click="editResource(resource)">编辑</button>
-                                <button class="btn btn-danger" @click="confirmDelete(resource)">删除</button>
-                            </td>
-                        </tr>
-                        <tr v-if="filteredResources.length === 0">
-                            <td colspan="7" style="text-align: center; color: #999;">暂无资源</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div v-else class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>预览</th>
+                                <th>名称</th>
+                                <th>UUID</th>
+                                <th>大小</th>
+                                <th>类型</th>
+                                <th>更新时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="resource in filteredResources" :key="resource.uuid">
+                                <td>
+                                    <img v-if="isImage(resource.content_type)" :src="'/api/files/' + getFileName(resource.path)" class="file-preview" @error="e => e.target.style.display='none'">
+                                    <span v-else>📄</span>
+                                </td>
+                                <td>{{ resource.name }}</td>
+                                <td style="font-family: monospace; font-size: 12px;">{{ resource.uuid }}</td>
+                                <td>{{ formatSize(resource.size) }}</td>
+                                <td>{{ resource.content_type }}</td>
+                                <td>{{ formatDate(resource.updated_at) }}</td>
+                                <td class="actions">
+                                    <button class="btn btn-secondary" @click="copyPath(resource)">复制路径</button>
+                                    <button class="btn btn-secondary" @click="editResource(resource)">编辑</button>
+                                    <button class="btn btn-danger" @click="confirmDelete(resource)">删除</button>
+                                </td>
+                            </tr>
+                            <tr v-if="filteredResources.length === 0">
+                                <td colspan="7" style="text-align: center; color: #999;">暂无资源</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
